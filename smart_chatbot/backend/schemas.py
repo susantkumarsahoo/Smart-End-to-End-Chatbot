@@ -10,9 +10,9 @@ class MessageResponse(BaseModel):
     role: str
     content: str
     timestamp: datetime
-    
+
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class ChatRequest(BaseModel):
     message: str
@@ -27,6 +27,7 @@ class ConversationResponse(BaseModel):
     session_id: str
     created_at: datetime
     messages: List[MessageResponse]
-    
+
     class Config:
-        from_attributes = True# Pydantic schemas
+        orm_mode = True
+

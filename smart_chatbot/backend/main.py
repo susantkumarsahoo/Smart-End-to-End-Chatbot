@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from backend.database import get_db, init_db
-from backend.models import Conversation, Message
-from backend.schemas import ChatRequest, ChatResponse, ConversationResponse
-from backend.chatbot.chain import ChatbotChain
+from smart_chatbot.backend.database import get_db, init_db
+from smart_chatbot.backend.models import Conversation, Message
+from smart_chatbot.backend.schemas import ChatRequest, ChatResponse, ConversationResponse
+from smart_chatbot.backend.chatbot.chain import ChatbotChain
 import uuid
 from typing import List
 import logging
@@ -40,18 +40,18 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
     try:
         # Generate or use existing session ID
         session_id = request.session_id or str(uuid.uuid4())
-        
+
         # Get or create conversation
         conversation = db.query(Conversation).filter(
             Conversation.session_id == session_id
         ).first()
-        
+
         if not conversation:
             conversation = Conversation(session_id=session_id)
             db.add(conversation)
             db.commit()
             db.refresh(conversation)
-        
+
         # Save user message
         user_message = Message(
             conversation_id=conversation.id,
@@ -60,11 +60,12 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         )
         db.add(user_message)
         db.commit()
-        
+        db.refresh(user_message)
+
         # Get chatbot response
         chatbot = ChatbotChain(session_id, db)
         bot_response = chatbot.get_response(request.message)
-        
+
         # Save assistant message
         assistant_message = Message(
             conversation_id=conversation.id,
@@ -73,9 +74,10 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         )
         db.add(assistant_message)
         db.commit()
-        
+        db.refresh(assistant_message)
+
         return ChatResponse(response=bot_response, session_id=session_id)
-    
+
     except Exception as e:
         logger.error(f"Error in chat endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -92,10 +94,10 @@ async def get_conversation(session_id: str, db: Session = Depends(get_db)):
     conversation = db.query(Conversation).filter(
         Conversation.session_id == session_id
     ).first()
-    
+
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    
+
     return conversation
 
 @app.delete("/conversations/{session_id}")
@@ -104,13 +106,13 @@ async def delete_conversation(session_id: str, db: Session = Depends(get_db)):
     conversation = db.query(Conversation).filter(
         Conversation.session_id == session_id
     ).first()
-    
+
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    
+
     db.delete(conversation)
     db.commit()
-    
+
     return {"message": "Conversation deleted successfully"}
 
 if __name__ == "__main__":

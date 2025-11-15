@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 
 # Configuration
-API_URL = "http://localhost:8000"
+API_URL = "http://127.0.0.1:8000"
 
 st.set_page_config(
     page_title="Smart AI Chatbot",
@@ -101,4 +101,4 @@ if prompt := st.chat_input("Type your message here..."):
             
             except Exception as e:
                 st.error(f"Error: {str(e)}")
-                st.info("Make sure the backend server is running on http://localhost:8000")# Streamlit UI application
+                st.info("Make sure the backend server is running on http://127.0.0.1:8000")# Streamlit UI application

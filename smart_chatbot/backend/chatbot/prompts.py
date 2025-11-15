@@ -5,7 +5,6 @@ from langchain_classic.prompts import (
     HumanMessagePromptTemplate,
 )
 
-# System prompt template
 SYSTEM_TEMPLATE = """You are a helpful, intelligent AI assistant. 
 Your goal is to provide accurate, helpful, and engaging responses to user queries.
 
@@ -18,7 +17,6 @@ Key guidelines:
 
 Current conversation context is provided below."""
 
-# Create the prompt template
 def get_chat_prompt():
     return ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate.from_template(SYSTEM_TEMPLATE),
@@ -26,7 +24,6 @@ def get_chat_prompt():
         HumanMessagePromptTemplate.from_template("{input}")
     ])
 
-# Simple prompt for basic interactions
 SIMPLE_PROMPT = ChatPromptTemplate.from_template(
     """You are a helpful AI assistant. Respond to the following:
     
@@ -34,3 +31,4 @@ SIMPLE_PROMPT = ChatPromptTemplate.from_template(
     
     Response:"""
 )
+
